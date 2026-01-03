@@ -18,6 +18,8 @@ export const AdminUsersPage = () => {
     email: "",
     role: "agent",
     tenantId: "tenant-smartops",
+    password: "",
+    status: "active",
   });
 
   const { data: adminUser, isError, refetch } = useQuery({
@@ -75,6 +77,16 @@ export const AdminUsersPage = () => {
               />
             </label>
             <label className="mt-3 block text-sm text-slate-700">
+              Password
+              <input
+                type="password"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              />
+              <p className="text-[11px] text-slate-500">Supabase Auth: email + password; public signup disabled.</p>
+            </label>
+            <label className="mt-3 block text-sm text-slate-700">
               Role
               <select
                 className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
@@ -86,6 +98,17 @@ export const AdminUsersPage = () => {
                     {role}
                   </option>
                 ))}
+              </select>
+            </label>
+            <label className="mt-3 block text-sm text-slate-700">
+              Status
+              <select
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                value={newUser.status}
+                onChange={(e) => setNewUser({ ...newUser, status: e.target.value as User["status"] })}
+              >
+                <option value="active">active</option>
+                <option value="inactive">inactive</option>
               </select>
             </label>
             <button
@@ -106,9 +129,14 @@ export const AdminUsersPage = () => {
                       <p className="font-semibold">{u!.name}</p>
                       <p className="text-xs text-slate-500">{u!.email}</p>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
-                      {u!.role}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+                        {u!.role}
+                      </span>
+                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700">
+                        {u!.status ?? "active"}
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ul>

@@ -10,6 +10,12 @@ import { HrPage } from "./pages/HrPage";
 import { BrandingPage } from "./pages/BrandingPage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { LoginPage } from "./pages/LoginPage";
+import { AgentsPage } from "./pages/AgentsPage";
+import { ClientsPage } from "./pages/ClientsPage";
+import { RevenuePage } from "./pages/RevenuePage";
+import { NotificationsPage } from "./pages/NotificationsPage";
+import { LargeBirthdayPage } from "./pages/LargeBirthdayPage";
+import { LargeTopAgentPage } from "./pages/LargeTopAgentPage";
 import { RoleGuard } from "./components/RoleGuard";
 import { useAuth } from "./context/AuthContext";
 import { BrandingProvider } from "./context/BrandingContext";
@@ -104,6 +110,54 @@ const AppRoutes = () => {
         element={
           <RoleGuard allow={["admin", "manager"]}>
             {shell(<AdminUsersPage />)}
+          </RoleGuard>
+        }
+      />
+      <Route
+        path="/agents"
+        element={
+          <RoleGuard allow={["admin", "manager"]}>
+            {shell(<AgentsPage />)}
+          </RoleGuard>
+        }
+      />
+      <Route
+        path="/clients"
+        element={
+          <RoleGuard allow={["admin", "manager", "agent"]}>
+            {shell(<ClientsPage />)}
+          </RoleGuard>
+        }
+      />
+      <Route
+        path="/revenue"
+        element={
+          <RoleGuard allow={["admin", "manager", "accountant"]}>
+            {shell(<RevenuePage />)}
+          </RoleGuard>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <RoleGuard allow={["admin", "manager", "accountant", "agent"]}>
+            {shell(<NotificationsPage />)}
+          </RoleGuard>
+        }
+      />
+      <Route
+        path="/large/birthday"
+        element={
+          <RoleGuard allow={["admin", "manager", "accountant", "agent"]}>
+            <LargeBirthdayPage />
+          </RoleGuard>
+        }
+      />
+      <Route
+        path="/large/top-agent"
+        element={
+          <RoleGuard allow={["admin", "manager", "accountant", "agent"]}>
+            <LargeTopAgentPage />
           </RoleGuard>
         }
       />

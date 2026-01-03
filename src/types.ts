@@ -11,6 +11,8 @@ export type User = {
   email: string;
   tenantId: string;
   avatarUrl?: string;
+  password?: string;
+  status?: "active" | "inactive";
 };
 
 export type Branding = {
@@ -20,6 +22,105 @@ export type Branding = {
   accentColor: string;
   tagline?: string;
   tenantId?: string;
+};
+
+export type Agent = TenantScoped & {
+  id: string;
+  fullName: string;
+  address?: string;
+  phone?: string;
+  email: string;
+  birthdayDate?: string;
+  photoUrl?: string;
+  agentCode: string;
+  hourlyRate: number;
+  assignedClients: string[];
+  status: "active" | "inactive";
+};
+
+export type Employee = TenantScoped & {
+  id: string;
+  fullName: string;
+  phone?: string;
+  email?: string;
+  birthdayDate?: string;
+  photoUrl?: string;
+  monthlySalary: number;
+  tasks?: string;
+  status: "active" | "inactive";
+};
+
+export type Client = TenantScoped & {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  projectName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  assignedAgentId: string;
+};
+
+export type RevenueEntry = TenantScoped & {
+  id: string;
+  entryDate: string;
+  hoursWorked: number;
+  contractRatePerHour: number;
+  revenueAmount: number;
+  agentId?: string;
+};
+
+export type PayrollEntry = TenantScoped & {
+  id: string;
+  payrollDate: string;
+  agentId: string;
+  hoursPaid: number;
+  payAmount: number;
+};
+
+export type Expense = TenantScoped & {
+  id: string;
+  expenseDate: string;
+  amount: number;
+  category: string;
+  description: string;
+};
+
+export type RecurringExpense = TenantScoped & {
+  id: string;
+  name: string;
+  amount: number;
+  isActive: boolean;
+  dayOfMonth: number;
+  category: string;
+  description?: string;
+};
+
+export type RecurringInstance = TenantScoped & {
+  id: string;
+  templateId: string;
+  month: string;
+  expenseDate: string;
+  amount: number;
+  category: string;
+};
+
+export type Investor = TenantScoped & {
+  id: string;
+  name: string;
+  percentShare: number;
+};
+
+export type NotificationType = "birthday" | "top_agent" | "payroll" | "recurring_expense";
+
+export type Notification = TenantScoped & {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  createdAt: string;
+  isRead: boolean;
 };
 
 export type Product = TenantScoped & {

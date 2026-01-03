@@ -29,7 +29,7 @@ export const LoginPage = () => {
         <p className="text-xs uppercase tracking-wide text-slate-500">Access</p>
         <h1 className="text-2xl font-bold text-slate-900">Sign in (RBAC enforced)</h1>
         <p className="text-sm text-slate-600">
-          No public signup. Admin/Manager provision users. Guests may only browse products.
+          No public signup. Admin/Manager provision users (Supabase Auth email/password). Guests may only browse products.
         </p>
       </div>
 

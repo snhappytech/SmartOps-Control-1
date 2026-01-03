@@ -1,14 +1,31 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "../components/ui/Card";
 import { ErrorState } from "../components/ui/ErrorState";
 import { useAuth } from "../context/AuthContext";
-import { fetchAnnouncements, fetchAppointments, fetchPayroll, fetchTickets } from "../data/mockApi";
-import { appointments as seedAppointments, tickets as seedTickets } from "../data/mockData";
+import {
+  fetchAnnouncements,
+  fetchAppointments,
+  fetchClients,
+  fetchPayroll,
+  fetchRevenueEntries,
+  fetchTickets,
+} from "../data/mockApi";
+import {
+  appointments as seedAppointments,
+  clients as seedClients,
+  tickets as seedTickets,
+  revenueEntries as seedRevenue,
+  agents as seedAgents,
+  employees as seedEmployees,
+} from "../data/mockData";
 import { cn } from "../utils/cn";
+import { PeriodSelector } from "../components/PeriodSelector";
+import { CalendarBoard } from "../components/CalendarBoard";
 
 export const DashboardPage = () => {
   const { user } = useAuth();
+  const [period, setPeriod] = useState({ mode: "monthly" as const, month: new Date().getMonth(), year: new Date().getFullYear() });
   const { data: ticketData, isError: ticketError, refetch: refetchTickets } = useQuery({
     queryKey: ["tickets"],
     queryFn: fetchTickets,
@@ -26,16 +43,80 @@ export const DashboardPage = () => {
     queryKey: ["announcements"],
     queryFn: fetchAnnouncements,
   });
+  const { data: revenueData } = useQuery({ queryKey: ["revenue"], queryFn: fetchRevenueEntries });
+  const { data: clientsData } = useQuery({ queryKey: ["clients"], queryFn: fetchClients });
 
   const tickets = ticketData ?? seedTickets;
   const appointments = appointmentData ?? seedAppointments;
+  const revenue = revenueData ?? seedRevenue;
+  const clients = clientsData ?? seedClients;
 
   const agentAppointments = useMemo(
     () => appointments.filter((appt) => appt.agentId === user?.id),
     [appointments, user?.id],
   );
 
+  const myProjects = useMemo(() => {
+    const now = new Date();
+    const assigned = clients.filter((c) => c.assignedAgentId === (user?.id ?? "ag-001"));
+    const withDate = assigned.map((c) => ({
+      ...c,
+      start: new Date(`${c.appointmentDate}T${c.appointmentTime}:00`),
+    }));
+    return {
+      upcoming: withDate.filter((c) => c.start > now).sort((a, b) => a.start.getTime() - b.start.getTime()),
+      started: withDate.filter((c) => c.start <= now).sort((a, b) => b.start.getTime() - a.start.getTime()),
+    };
+  }, [clients, user?.id]);
+
+  const topAgent = useMemo(() => {
+    const totals: Record<string, number> = {};
+    revenue.forEach((r) => {
+      const key = r.agentId ?? "unknown";
+      totals[key] = (totals[key] ?? 0) + r.hoursWorked;
+    });
+    const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+    const [agentId, hours] = sorted[0] ?? [];
+    return { agentId, hours: hours ?? 0 };
+  }, [revenue]);
+
+  const calendarEvents = useMemo(() => {
+    const base = appointments.map((appt) => ({
+      id: appt.id,
+      date: appt.start,
+      title: `Appt: ${appt.clientName}`,
+      category: "revenue" as const,
+      value: appt.project,
+    }));
+    const payrollEvents =
+      payrollData?.map((p, idx) => {
+        const amount = typeof (p as any).payAmount === "number" ? (p as any).payAmount : p.hours * p.hourlyRate;
+        return {
+          id: `pay-${idx}`,
+          date: (p as any).paidDate ?? (p as any).payrollDate ?? new Date().toISOString(),
+          title: "Payroll",
+          category: "payroll" as const,
+          value: `$${amount.toFixed(2)}`,
+        };
+      }) ?? [];
+    const birthdayEvents = [...seedAgents, ...seedEmployees]
+      .filter((p) => p.birthdayDate)
+      .map((p) => ({
+        id: `bday-${p.id}`,
+        date: `${new Date().getFullYear()}-${p.birthdayDate!.slice(5)}`,
+        title: `Birthday: ${p.fullName}`,
+        category: "birthday" as const,
+        value: p.photoUrl,
+      }));
+    return [...base, ...payrollEvents, ...birthdayEvents];
+  }, [appointments, payrollData]);
+
   const isAgent = user?.role === "agent";
+  const handleRecalculate = () => {
+    refetchTickets();
+    refetchAppts();
+    refetchPayroll();
+  };
 
   return (
     <div className="space-y-4">
@@ -45,8 +126,17 @@ export const DashboardPage = () => {
           <h1 className="text-2xl font-bold text-slate-900">Unified control center</h1>
           <p className="text-sm text-slate-600">Multi-tenant RBAC with tenant_id enforced across modules.</p>
         </div>
-        <div className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white">
-          Role: {user?.role ?? "guest"}
+        <div className="flex items-center gap-2">
+          <PeriodSelector mode={period.mode} month={period.month} year={period.year} onChange={setPeriod} />
+          <div className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white">Role: {user?.role ?? "guest"}</div>
+          {["admin", "manager"].includes(user?.role ?? "") && (
+            <button
+              className="rounded-md bg-slate-900 px-3 py-1 text-xs font-semibold text-white"
+              onClick={handleRecalculate}
+            >
+              Recalculate Month/Year
+            </button>
+          )}
         </div>
       </div>
 
@@ -107,25 +197,51 @@ export const DashboardPage = () => {
           <div className="grid gap-4 md:grid-cols-2">
             <Card title="Upcoming Birthdays" description="Public name + photo">
               <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <img src="https://placekitten.com/60/60" alt="Birthday" className="h-10 w-10 rounded-full" />
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Casey Agent</p>
-                    <p className="text-xs text-slate-600">Oct 4</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <img src="https://placekitten.com/60/61" alt="Birthday" className="h-10 w-10 rounded-full" />
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Jordan Support</p>
-                    <p className="text-xs text-slate-600">Oct 12</p>
-                  </div>
-                </div>
+                {[...seedAgents, ...seedEmployees]
+                  .filter((p) => p.birthdayDate)
+                  .sort((a, b) => a.birthdayDate!.localeCompare(b.birthdayDate!))
+                  .map((p) => (
+                    <div key={p.id} className="flex items-center gap-3">
+                      <img src={p.photoUrl ?? "https://placekitten.com/60/60"} alt="Birthday" className="h-10 w-10 rounded-full" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{p.fullName}</p>
+                        <p className="text-xs text-slate-600">{p.birthdayDate}</p>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </Card>
             <Card title="Happy Birthday card" description="Celebrate teammates">
               <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 text-amber-800">
                 🎉 Happy Birthday Casey! Enjoy your day and thank you for the great work.
+              </div>
+            </Card>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card title="My Projects" description="Upcoming">
+              <div className="space-y-2 text-sm text-slate-700">
+                {myProjects.upcoming.map((p) => (
+                  <div key={p.id} className="rounded-lg bg-slate-50 p-3">
+                    <p className="font-semibold">{p.projectName}</p>
+                    <p className="text-xs text-slate-600">
+                      {p.appointmentDate} {p.appointmentTime} • {p.fullName}
+                    </p>
+                  </div>
+                ))}
+                {myProjects.upcoming.length === 0 && <p className="text-xs text-slate-600">No upcoming projects.</p>}
+              </div>
+            </Card>
+            <Card title="My Projects" description="In progress / started">
+              <div className="space-y-2 text-sm text-slate-700">
+                {myProjects.started.map((p) => (
+                  <div key={p.id} className="rounded-lg bg-slate-50 p-3">
+                    <p className="font-semibold">{p.projectName}</p>
+                    <p className="text-xs text-slate-600">
+                      {p.appointmentDate} {p.appointmentTime} • {p.fullName}
+                    </p>
+                  </div>
+                ))}
+                {myProjects.started.length === 0 && <p className="text-xs text-slate-600">No started projects.</p>}
               </div>
             </Card>
           </div>
@@ -237,6 +353,7 @@ export const DashboardPage = () => {
           )}
         </Card>
       </div>
+      <CalendarBoard events={calendarEvents} month={period.month} year={period.year} onNavigate={(next) => setPeriod({ ...period, ...next })} />
     </div>
   );
 };

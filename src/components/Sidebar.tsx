@@ -11,6 +11,11 @@ const links = [
   { to: "/support", label: "Support", roles: ["admin", "manager", "agent"] },
   { to: "/hr", label: "HR & Payroll", roles: ["admin", "manager", "accountant", "agent"] },
   { to: "/finance", label: "Finance", roles: ["admin", "manager", "accountant"] },
+  { to: "/revenue", label: "Revenue & Hours", roles: ["admin", "manager", "accountant"] },
+  { to: "/clients", label: "Clients", roles: ["admin", "manager", "agent"] },
+  { to: "/agents", label: "Agents & Employees", roles: ["admin", "manager"] },
+  { to: "/notifications", label: "Notifications", roles: ["admin", "manager", "accountant", "agent"] },
+  { to: "/large/top-agent", label: "Large Screen", roles: ["admin", "manager", "accountant", "agent"] },
   { to: "/branding", label: "Branding", roles: ["admin"] },
   { to: "/admin/users", label: "User Access", roles: ["admin", "manager"] },
 ];
