@@ -11,6 +11,7 @@ SmartOps Control is a multi-tenant, white-label call center operations control a
 - Branding is editable from the Branding page and applies across the UI, large-screen views (birthday / agent of month), and exports. Default brand is “SmartOps Control.”
 - No signup flow is exposed; login is role-based only. Admin/Manager provisioning is required to create users and agents.
 - Error handling with retry buttons and non-blocking loaders.
+- Security: Supabase RLS policies in `supabase/policies.sql` enforce tenant isolation, guest-only active product access, agent-only self payroll/clients, admin/manager finance control, and append-only audit guidance. Edge functions must validate JWT role + tenant and never expose service keys.
 
 ## Getting started
 1. Install dependencies
@@ -28,3 +29,9 @@ SmartOps Control is a multi-tenant, white-label call center operations control a
    ```
 
 The app ships with mock data to demo flows without a live backend; replace the mock API calls with Supabase queries and Edge Functions for privileged actions (e.g., provisioning users). Branding is editable from the Branding page and applies across the UI.
+
+## Supabase security setup
+1. Create tables for user_profiles, tenant_branding, agents, employees, clients, products, orders, revenue_entries, payroll_entries, expenses, recurring_expenses, recurring_instances, investors, notifications, support_tickets, announcements.
+2. Enable RLS on all tables and run `supabase/policies.sql` in the SQL editor to add tenant isolation and per-role policies (guest active products only; agent only own payroll/clients; admin/manager finance control; investor protection).
+3. Ensure Edge Functions require JWT auth + role/tenant checks and keep service keys server-side only.
+4. Turn on leaked password protection + strong password rules in Supabase Auth.
