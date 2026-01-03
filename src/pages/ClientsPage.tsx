@@ -146,7 +146,7 @@ export const ClientsPage = () => {
       )}
 
       {isError ? (
-        <ErrorState message="Clients unavailable" onRetry={refetch} />
+        <ErrorState message="Clients unavailable. You may lack permission to view or network failed." onRetry={refetch} />
       ) : (
         <Card title="Client list" description={user?.role === "agent" ? "Assigned clients" : "All clients"}>
           <div className="divide-y divide-slate-200">

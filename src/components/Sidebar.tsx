@@ -29,7 +29,7 @@ export const Sidebar = () => {
   const filtered = links.filter((link) => link.roles.includes(user.role));
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-slate-200 bg-white/70 backdrop-blur">
+    <aside className="flex h-screen w-64 flex-col border-r border-slate-200 bg-white/70 backdrop-blur lg:sticky lg:top-0">
       <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
         <img src={branding?.logoUrl ?? "/soc-logo.svg"} alt="Logo" className="h-10 w-10 rounded-full bg-slate-100 p-1" />
         <div>

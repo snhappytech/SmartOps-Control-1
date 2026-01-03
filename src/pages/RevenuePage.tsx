@@ -180,7 +180,7 @@ export const RevenuePage = () => {
       <div className="grid gap-4 md:grid-cols-2">
         <Card title="Add Entry" description="hours_worked * contract_rate_per_hour = revenue_amount">
           {isError ? (
-            <ErrorState message="Revenue failed" onRetry={refetch} />
+            <ErrorState message="Revenue failed to load. Check network or Supabase policy access." onRetry={refetch} />
           ) : (
             <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
               <label className="text-sm text-slate-700">

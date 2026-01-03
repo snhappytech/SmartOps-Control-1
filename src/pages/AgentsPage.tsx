@@ -100,7 +100,7 @@ export const AgentsPage = () => {
       <div className="grid gap-4 md:grid-cols-2">
         <Card title="Create Agent" description="Auto agent code & hourly rate">
           {agentError ? (
-            <ErrorState message="Agents failed to load" onRetry={refetchAgents} />
+            <ErrorState message="Agents failed to load. Confirm permissions and network." onRetry={refetchAgents} />
           ) : (
             <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
               <div className="grid gap-2 md:grid-cols-2">
